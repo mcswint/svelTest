@@ -29,7 +29,6 @@ from svelTraverse import SvelTraverse
 
 def compile(argv):
 	verbose = None
-	# TODO: else if no arguments provided
 	if len(argv) == 2:
 		input_file = argv[1]
 	elif len(argv) == 3:
@@ -41,7 +40,6 @@ def compile(argv):
 		sys.exit("Usage: ./compile.sh [-v] <file_to_compile>.svel")
 
 	# split at "/" to get to actual file name (if relative path)
-	# TODO: handle for Windows \
 	input_parts = input_file.split("/")
 
 	# get name of input file to use later (last in array split at /)
@@ -58,7 +56,7 @@ def compile(argv):
 	try:
 		source_code = open(input_file).read()
 	except IOERROR, e:
-		print e
+		sys.exit(e)
 
 
 	# get and build lexer; errorlog=lex.NullLogger() removes PLY warnings
@@ -73,18 +71,22 @@ def compile(argv):
 
 	# walk the tree and get the compiled code
 	if verbose == None:
-		compiled_code = SvelTraverse(ast).get_code()
+		compiled_code, errors = SvelTraverse(ast).get_code_and_errors()
 	else:
 		print ast
-		compiled_code = SvelTraverse(ast, verbose=True).get_code()
+		compiled_code, errors = SvelTraverse(ast, verbose=True).get_code_and_errors()
 	# if arg3 = -d
 	# compiled_code = SvelTraverse(ast, debug=true).get_code()
 
-	output_file = open(output_filename, 'w')
-	output_file.write(compiled_code)
-
-	#TODO: catch errors with writing
-	print "Success: compiled to " + output_filename
+	# if no errors thrown during compilation, go ahead and write compiled code to file
+	if errors == False:
+		output_file = open(output_filename, 'w')
+		output_file.write(compiled_code)	
+		print "Success: compiled to " + output_filename
+	# if errors thrown duringn compilation, don't write - stop and tell user to check
+	# (this also makes sure that the compile.sh script knows compilation failed)
+	else:
+		print "Errors occurred at compile time"
 
 if __name__ == '__main__':
 	compile(sys.argv)
