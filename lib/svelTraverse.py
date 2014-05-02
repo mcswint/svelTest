@@ -69,11 +69,11 @@ class SvelTraverse(object):
 		return " "*spaces + line
 
 	def level_up(self):
-		''' +1 indent; TODO: create new scope '''
+		''' +1 indent '''
 		self.level += 1
 
 	def level_down(self):
-		''' -1 indent; TODO: remove old scope '''
+		''' -1 indent '''
 		self.level -= 1
 
 	def beginning(self):
@@ -126,8 +126,15 @@ class SvelTraverse(object):
 			pfileutil = open("helpers/pfileutil.py").read()
 			pfunct = open("helpers/pfunct.py").read()
 			return pfileutil + "\n\n" + pfunct
+		elif tree.leaf == "None":
+			return ""
 		else:
-			sys.exit("ERROR: Unrecognized language type.")
+			try:
+				raise UnrecognizedLangError(tree.leaf, lineno=tree.lineno)
+			except UnrecognizedLangError as e:
+				print str(e)
+			self.errors_occurred = True
+			return ""
 
 	def _translation_unit(self, tree, flags=None, verbose=False):
 		if(verbose):
@@ -490,7 +497,6 @@ class SvelTraverse(object):
 			if (expected_type == "int" or expected_type == "double") and \
 				(_type == "double" or _type == "int"):
 				expected_type = expected_type
-			#TODO (kaitlin) finish this
 			elif not self._type_is_array(expected_type) and _type == "array":
 				try:
 					raise ArrayIDTypeMismatchError(var, expected_type, type, lineno)
@@ -1326,6 +1332,18 @@ class SvelTraverse(object):
 #################################################################################
 #					  svelTest defined Exceptions 								#
 #################################################################################
+class UnrecognizedLangError(Exception):
+	def __init__(self, actual, lineno=None):
+		self.actual = actual
+		self.lineno = lineno
+	def __str__(self):
+		if self.lineno is not None:
+			return "\tUnrecognizedLangError at line %s : lang requires Java, C, Python, or None. Found %s." % \
+				(self.lineno, self.actual)
+		else:
+			return "\tUnrecognizedLangError : lang requires Java, C, Python, or None. Found %s." % \
+				(self.actual)
+
 class TypeMismatchError(Exception):
 	def __init__(self, context, expected, actual, lineno=None):
 		self.context = context
