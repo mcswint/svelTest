@@ -1,11 +1,12 @@
-lang = C;
+lang = Python;
 
+// similar to C implementation
 main() {
 	// tests the main add
-	file addFile = "add.c";
-	funct addMain = {__main__, (c_int, c_char*), addFile};
+	file addFile = "Add.py";
+	funct addMain = {"add", (p_int, p_int), addFile};
 
-	input[] _in = {(1,2), (-2, 4), (0, 1)};
+	input[] _in = {{1, 2}, {-2, 4}, {0, 1}};
 	output[] out = {"3", "2", "1"};
 
 	// main -- console
@@ -16,9 +17,4 @@ main() {
 		 	print ("Test failed.");
 		}
 	}
-
-
-	// fib() -- return value
-	funct fib = {"fib", (c_int), "fib.c"};
-    fib.assert(4, 3, verbose);
 }
